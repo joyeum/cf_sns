@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { PostsService } from './posts.service';
 
 /**
@@ -8,25 +8,64 @@ import { PostsService } from './posts.service';
  * likeCount: number;
  * commentCount: number;
  */
-interface Post {
+interface PostModel {
+  id: number;
   author: string;
   title: string;
   content: string;
   likeCount: number;
   commentCount: number;
 }
+let posts : PostModel[] = [
+  {
+    id: 1,
+    author: 'newjeans_official',
+    title: '뉴진스 민지',
+    content: '베이비복스랑 콜라보하는 민지',
+    likeCount: 1000000,
+    commentCount: 5000,
+  },
+  {
+    id: 2,
+    author: 'newjeans_official',
+    title: '뉴진스 하니',
+    content: '하니는 맏언니',
+    likeCount: 900000,
+    commentCount: 4000,
+  },
+  {
+    id: 3,
+    author: 'blackpink_official',
+    title: '블랙핑크 제니',
+    content: '제니는 솔로 앨범도 내고',
+    likeCount: 2000000,
+    commentCount: 6000,
+  },
+];
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
+
+  // 1) GET /posts
   @Get()
-  getPost(): Post {
-    return {
-      author: 'newjeans_official',
-      title: '뉴진스 민지',
-      content: '베이비복스랑 콜라보하는 민지',
-      likeCount: 1000000,
-      commentCount: 5000,
-    };
+  getPosts(): PostModel[] {
+    return posts;
   }
+
+  // 2) GET /posts/:id
+  @Get(':id')
+  getPost(@Param('id') id: string) {
+    return posts.find((post) => post.id === +id);
+  }
+  // @Get()
+  // getPost(): PostModel {
+  //   return {
+  //     author: 'newjeans_official',
+  //     title: '뉴진스 민지',
+  //     content: '베이비복스랑 콜라보하는 민지',
+  //     likeCount: 1000000,
+  //     commentCount: 5000,
+  //   };
+  // }
 }
