@@ -1,5 +1,15 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { PostsService } from './posts.service';
+import { title } from 'process';
 
 /**
  * authr: string;
@@ -16,7 +26,7 @@ interface PostModel {
   likeCount: number;
   commentCount: number;
 }
-let posts : PostModel[] = [
+let posts: PostModel[] = [
   {
     id: 1,
     author: 'newjeans_official',
@@ -56,16 +66,65 @@ export class PostsController {
   // 2) GET /posts/:id
   @Get(':id')
   getPost(@Param('id') id: string) {
-    return posts.find((post) => post.id === +id);
+    const post = posts.find((post) => post.id === +id); // undefined , PostModel
+    if (!post) {
+      throw new NotFoundException();
+    }
+    return post;
   }
-  // @Get()
-  // getPost(): PostModel {
-  //   return {
-  //     author: 'newjeans_official',
-  //     title: '뉴진스 민지',
-  //     content: '베이비복스랑 콜라보하는 민지',
-  //     likeCount: 1000000,
-  //     commentCount: 5000,
-  //   };
-  // }
+
+  // 3) POST /posts
+  @Post()
+  postPosts(
+    @Body('author') author: string,
+    @Body('title') title: string,
+    @Body('content') content: string,
+  ) {
+    const post: PostModel = {
+      id: posts[posts.length - 1].id + 1,
+      author,
+      title,
+      content,
+      likeCount: 0,
+      commentCount: 0,
+    };
+    posts = [...posts, post];
+    return post;
+  }
+
+  // 4) PATCH /posts/:id
+  @Patch(':id')
+  patchPost(
+    @Param('id') id: string,
+    @Body('author') author?: string,
+    @Body('title') title?: string,
+    @Body('content') content?: string,
+  ) {
+    const post = posts.find((post) => post.id === +id);
+    if (!post) {
+      throw new NotFoundException();
+    }
+    if (author) {
+      post.author = author;
+    }
+    if (title) {
+      post.title = title;
+    }
+    if (content) {
+      post.content = content;
+    }
+    posts = posts.map((prevPost) => (prevPost.id === +id ? post : prevPost));
+    return post;
+  }
+
+  // 5) DELETE /posts/:id
+  @Delete(':id')
+  deletePost(@Param('id') id: string) {
+    const post = posts.find((post) => post.id === +id);
+    if (!post) {
+      throw new NotFoundException();
+    }
+    posts = posts.filter((post) => post.id !== +id);
+    return post.id;
+  }
 }
